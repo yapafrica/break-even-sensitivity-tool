@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Break-Even Sensitivity Tool</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #4caf50;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        input, button, select {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            width: 100%;
+        }
+        button {
+            background-color: #28a745;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #28a745;
+        }
+        .row {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+        }
+        .row > div {
+            flex: 1;
+        }
+        #chartContainer {
+            margin: 20px 0;
+        }
+        .result {
+            background: #4caf50;
+            color: white;
+            padding: 10px;
+            text-align: center;
+            border-radius: 5px;
+            font-size: 18px;
+        }
+        footer {
+            text-align: center;
+            padding: 10px;
+            margin-top: 20px;
+            background: #f4f4f9;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Break-Even Sensitivity Tool</h1>
+        <p>Analyze the impact of variable changes on your break-even point and profitability</p>
+    </header>
+    <div class="container">
+        <h2>Input Parameters</h2>
+        <div class="row">
+            <div>
+                <label for="fixedCost">Fixed Costs:</label>
+                <input type="number" id="fixedCost" value="1000" step="0.01">
+            </div>
+            <div>
+                <label for="variableCost">Variable Costs per Unit:</label>
+                <input type="number" id="variableCost" value="20" step="0.01">
+            </div>
+        </div>
+        <div class="row">
+            <div>
+                <label for="sellingPrice">Selling Price per Unit:</label>
+                <input type="number" id="sellingPrice" value="50" step="0.01">
+            </div>
+            <div>
+                <label for="targetProfit">Target Profit:</label>
+                <input type="number" id="targetProfit" value="500" step="0.01">
+            </div>
+        </div>
+        <button onclick="calculateBreakEven()">Calculate</button>
+        <div id="results" class="result">
+            Enter parameters and click "Calculate" to see results.
+        </div>
+        <div id="chartContainer">
+            <canvas id="breakEvenChart" width="400" height="200"></canvas>
+        </div>
+
+    <footer>
+        <p> © YAP Africa Break-Even Sensitivity Tool</p>
+    </footer>
+
+    <script>
+        let chart;
+
+        function calculateBreakEven() {
+            const fixedCost = parseFloat(document.getElementById('fixedCost').value);
+            const variableCost = parseFloat(document.getElementById('variableCost').value);
+            const sellingPrice = parseFloat(document.getElementById('sellingPrice').value);
+            const targetProfit = parseFloat(document.getElementById('targetProfit').value);
+
+            // Basic Calculations
+            const contributionMargin = sellingPrice - variableCost;
+            const breakEvenUnits = fixedCost / contributionMargin;
+            const targetUnits = (fixedCost + targetProfit) / contributionMargin;
+            const breakEvenRevenue = breakEvenUnits * sellingPrice;
+
+            // Display Results
+            document.getElementById('results').innerHTML = `
+                <strong>Break-Even Point:</strong> ${breakEvenUnits.toFixed(2)} units<br>
+                <strong>Break-Even Revenue:</strong> $${breakEvenRevenue.toFixed(2)}<br>
+                <strong>Target Units (Profit of $${targetProfit}):</strong> ${targetUnits.toFixed(2)} units<br>
+                <strong>Contribution Margin:</strong> $${contributionMargin.toFixed(2)} per unit
+            `;
+
+            // Graph Data
+            const priceScenarios = [sellingPrice - 10, sellingPrice, sellingPrice + 10];
+            const breakEvenPoints = priceScenarios.map(price => fixedCost / (price - variableCost));
+
+            // Update Chart
+            const ctx = document.getElementById('breakEvenChart').getContext('2d');
+            if (chart) chart.destroy();
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Low Price', 'Current Price', 'High Price'],
+                    datasets: [{
+                        label: 'Break-Even Units',
+                        data: breakEvenPoints,
+                        borderColor: 'rgb(75, 192, 192)',
+                        borderWidth: 2,
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: { beginAtZero: true },
+                        x: { title: { display: true, text: 'Price Scenarios' } }
+                    }
+                }
+            });
+        }
+
+
+    </script>
+</body>
+</html>
